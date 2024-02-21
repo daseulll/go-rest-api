@@ -47,10 +47,33 @@ func TestGetWeatherSummary(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		got := response.Body.String()
-		want := "{}"
+		want := "lat and lon are required.\n"
 
 		if got != want {
 			t.Errorf("got %q, want %q", got, want)
+		}
+
+		if response.Code != http.StatusBadRequest {
+			t.Errorf("got %d, want %d", response.Code, http.StatusBadRequest)
+		}
+
+	})
+
+	t.Run("return weahter summary", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/summary", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		got := response.Body.String()
+		want := "lat and lon are required.\n"
+
+		if got != want {
+			t.Errorf("got %q, want %q", got, want)
+		}
+
+		if response.Code != http.StatusBadRequest {
+			t.Errorf("got %d, want %d", response.Code, http.StatusBadRequest)
 		}
 
 	})

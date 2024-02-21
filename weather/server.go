@@ -23,15 +23,29 @@ func (s *WeatherServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if path == "/summary" {
 		queryParams := r.URL.Query()
-		lat_param := queryParams.Get("lat")
-		lon_param := queryParams.Get("lon")
+		latParam := queryParams.Get("lat")
+		lonParam := queryParams.Get("lon")
 
-		lat, _ := strconv.ParseFloat(lat_param, 64)
-		lon, _ := strconv.ParseFloat(lon_param, 64)
+		lat, latErr := strconv.ParseFloat(latParam, 64)
+		lon, lonErr := strconv.ParseFloat(lonParam, 64)
+
+		if latErr != nil || lonErr != nil {
+			http.Error(w, "lat and lon are required.", http.StatusBadRequest)
+			return
+		}
+
+		if !isValidCoordinate(lat, -90, 90) || !isValidCoordinate(lon, -180, 180) {
+			http.Error(w, "lat must be between -90 and 90, lon must be between -180 and 180.", http.StatusBadRequest)
+			return
+		}
 
 		summary := s.weatherService.GetWeatherSummary(lat, lon)
 
 		w.Header().Set("content-type", jsonContentType)
 		json.NewEncoder(w).Encode(summary)
 	}
+}
+
+func isValidCoordinate(coord float64, min, max float64) bool {
+	return coord >= min && coord <= max
 }
